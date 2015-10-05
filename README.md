@@ -71,11 +71,24 @@ The White Team <rav7teif@ya.ru>
 
 * Can I trust you to not do evil things with my devices?
 
-  Yes.
+  Yes, but that is of no help - somebody could steal the key, no matter
+  how well I protect it. More likely, there is a bug in the code that
+  allows access to anybody.
 
 * Should I trust you?
 
   Of course not, you should secure your device.
+
+* Why is this not a problem?
+
+  Linux.Wifatch doesn't use elaborate backdoors or 0day exploits to
+  hack devices. It basically just uses telnet and a few other protocols
+  and tries a few really dumb or default passwords (our favourite is
+  "password"). These passwords are well-known - anybody can do that,
+  without having to steal any secret key.
+
+  Basically it only infects devices that are not protected at all in the
+  first place!
 
 * What license is this?
 
