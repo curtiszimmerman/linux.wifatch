@@ -107,3 +107,14 @@ The White Team <rav7teif@ya.ru>
 
   Not part of the initial release.
 
+* Is there a proof that this is the official repository?
+
+  Here is a nistp256 signature of the sha256 of the repository URL on
+  gitlab, using the actual signing key used for the real version.
+
+  http://gitlab.com/rav7teif/linux.wifatch
+
+  3678992952743f6596730c8936263ecdaca200f0aa87a3bf6d287561d1a55c4c
+  a331e24b1d6aae7e8983adb9a9b9f68b3dc609278593bdbfbf60556a8acc42e2
+
+
