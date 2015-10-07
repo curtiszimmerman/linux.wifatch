@@ -87,8 +87,7 @@ use bn::proc;
 
 Coro::State::cctx_max_idle bn::func::free_mem < 10000 ? 1 : 4;
 
-Convert::Scalar::unmagic $0,
-	"\0";    # avoid crash when missing setproctitle and readonly
+Convert::Scalar::unmagic $0, "\0";    # avoid crash when missing setproctitle and readonly
 
 sub init
 {

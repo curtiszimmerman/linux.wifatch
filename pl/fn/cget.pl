@@ -34,11 +34,7 @@ if (open my $cf, "<", "$::BASE/.net_cf") {
 }
 
 if (@ARGV) {
-	$val = [map exists $bn::cfg{$_}
-		? $bn::cfg{$_}
-		: $Types::Serialiser::false,
-		@ARGV
-	];
+	$val = [map exists $bn::cfg{$_} ? $bn::cfg{$_} : $Types::Serialiser::false, @ARGV];
 } else {
 	$val = \%bn::cfg;
 }

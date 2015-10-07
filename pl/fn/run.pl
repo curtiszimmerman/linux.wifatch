@@ -53,8 +53,7 @@ sub {
 			sysread $fh, my $buf, 8192;
 			if ($buf =~ /^MemTotal: +([0-9]+)/m) {
 				$buf = $1 >> 7;
-				bn::proc::wrproc "/proc/sys/vm/min_free_kbytes",
-					$buf < 16384 ? $buf : 16384;
+				bn::proc::wrproc "/proc/sys/vm/min_free_kbytes", $buf < 16384 ? $buf : 16384;
 			}
 		}
 
@@ -103,15 +102,14 @@ sub {
 
 				if ($buf = ord $buf) {
 					if ($buf == 255) {
-						sleep 600
-							; # 10 minute grace period for restart
+						sleep 600;    # 10 minute grace period for restart
 					} elsif ($buf == 254) {
 						$bn::SAFE_COMMAND = 254;
 					} elsif ($buf == 253) {
 						$bn::SAFE_COMMAND = 253;
 						$bn::SAFE_MODE    = 0;
 					} else {
-						$timeout = $buf * 30;   # 1..239
+						$timeout = $buf * 30;    # 1..239
 					}
 				}
 			} elsif (!$r) {
@@ -119,7 +117,7 @@ sub {
 			}
 		}
 
-		kill 9, $pid if $pid;    # if case bnkill fail
+		kill 9, $pid if $pid;                                    # if case bnkill fail
 
 		require bn::bnkill;
 		bn::bnkill::bnkill();

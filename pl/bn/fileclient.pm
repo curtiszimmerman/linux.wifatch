@@ -40,9 +40,7 @@ sub download_from
 		my $buf = bn::io::xread $fh, $len;
 
 		# eval to avoid crash "U0 mode on a byte string at"
-		65536 >= eval {
-			unpack "C0U", $buf;
-			}    # protect resource-starving "attack"
+		65536 >= eval {unpack "C0U", $buf}    # protect resource-starving "attack"
 			or return;
 
 		syswrite $file, Compress::LZF::decompress $buf;

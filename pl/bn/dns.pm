@@ -19,15 +19,10 @@
 
 package bn::dns;
 
-my @cfg = (max_outstanding => 16,
-	   timeout         => [1, 2, 4, 8, 16, 24],
-	   search          => [],
-	   ndots           => 1
-);
+my @cfg = (max_outstanding => 16, timeout => [1, 2, 4, 8, 16, 24], search => [], ndots => 1);
 my @dns_test = qw(google.com ietf.org berkeley.edu);
 
-$AnyEvent::DNS::RESOLVER = new AnyEvent::DNS @cfg,
-	server => \@AnyEvent::DNS::DNS_FALLBACK;
+$AnyEvent::DNS::RESOLVER = new AnyEvent::DNS @cfg, server => \@AnyEvent::DNS::DNS_FALLBACK;
 
 for (@dns_test) {
 	AnyEvent::DNS::ns $_, Coro::rouse_cb;
@@ -36,8 +31,7 @@ for (@dns_test) {
 
 bn::log "DNS first round failure";
 
-$AnyEvent::DNS::RESOLVER = new AnyEvent::DNS @cfg,
-	server => \@AnyEvent::DNS::DNS_FALLBACK;
+$AnyEvent::DNS::RESOLVER = new AnyEvent::DNS @cfg, server => \@AnyEvent::DNS::DNS_FALLBACK;
 $AnyEvent::DNS::RESOLVER->os_config;
 $AnyEvent::DNS::RESOLVER->{search} = [];
 $AnyEvent::DNS::RESOLVER->_compile;

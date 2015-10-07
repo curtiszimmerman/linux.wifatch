@@ -34,9 +34,7 @@ sub lldist
 	my $dlat = $lat2 - $lat1;
 	my $dlon = $lon2 - $lon1;
 
-	my $a =
-		(sin 0.5 * $dlat)**2 +
-		(sin 0.5 * $dlon)**2 * (cos $lat1) * (cos $lat2);
+	my $a = (sin 0.5 * $dlat)**2 + (sin 0.5 * $dlon)**2 * (cos $lat1) * (cos $lat2);
 
 	# 12742 *
 	atan2 $a**0.5, (1 - $a)**0.5;
@@ -56,12 +54,10 @@ sub test
 
 		1 while (bn::http::more $fh, $cfg, 16384);
 
-		$cfg =~
-			/<client ip="([^"]+)" lat="([^"]+)" lon="([^"]+)" isp="([^"]+)" /
+		$cfg =~ /<client ip="([^"]+)" lat="([^"]+)" lon="([^"]+)" isp="([^"]+)" /
 			or return (undef, "cannot parse client", $cfg);
 
-		($1, $2, $3, $4
-			);
+		($1, $2, $3, $4);
 	};
 
 	bn::log "fetching servers";
@@ -70,8 +66,7 @@ sub test
 
 	{
 		my $fh = bn::http::req
-			GET =>
-			"http://www.speedtest.net/speedtest-servers-static.php",
+			GET => "http://www.speedtest.net/speedtest-servers-static.php",
 			""
 			or return (undef, "cannot download servers");
 
@@ -80,30 +75,24 @@ sub test
 		my $buf;
 		my $max = 1e99;
 		while (bn::http::more $fh, $buf, 16384) {
-			while ($buf =~
-				/<server url="([^"]+)" lat="([^"]+)" lon="([^"]+)" name="([^"]+)" country="([^"]+)" cc="([^"]+)" [^>]*>/g
-				) {
+			while ($buf =~ /<server url="([^"]+)" lat="([^"]+)" lon="([^"]+)" name="([^"]+)" country="([^"]+)" cc="([^"]+)" [^>]*>/g) {
 				my ($url, $slat, $slon, $cc) = ($1, $2, $3, $6);
 				(my $surl = $url) =~ s%/[^/]*$%%;
 
 				my $dist = lldist $lat, $lon, $slat, $slon;
 
 				if ($dist < $max) {
-					push @servers,
-						[$dist, $url, $surl, $cc];
+					push @servers, [$dist, $url, $surl, $cc];
 
 					if (@servers > 10) {
 						for (0 .. $#servers) {
-							if ($servers[$_][0] >=
-							     $max) {
-								splice @servers,
-									$_, 1;
+							if ($servers[$_][0] >= $max) {
+								splice @servers, $_, 1;
 								last;
 							}
 						}
 
-						$max = List::Util::max
-							map $_->[0], @servers;
+						$max = List::Util::max map $_->[0], @servers;
 					}
 				}
 			}
@@ -118,10 +107,7 @@ sub test
 	for my $server (@servers) {
 		$server->[0] = List::Util::min map {
 			bn::log "pinging server $server->[2]";
-			if ( my $fh = bn::http::req
-			     GET => "$server->[2]/latency.txt",
-			     ""
-				) {
+			if (my $fh = bn::http::req GET => "$server->[2]/latency.txt", "") {
 				my $t = AE::now;
 				bn::http::res $fh, 10;
 				AE::now - $t;
@@ -139,10 +125,7 @@ sub test
 	my $download = int List::Util::max map {
 		bn::log "download server $_->[2]";
 
-		if ( my $fh = bn::http::req
-		     GET => "$_->[2]/random4000x4000.jpg",
-		     ""
-			) {
+		if (my $fh = bn::http::req GET => "$_->[2]/random4000x4000.jpg", "") {
 			my ($len, $t, $buf);
 
 			while () {
@@ -169,10 +152,7 @@ sub test
 	my $upload = int List::Util::max map {
 		bn::log "upload server $_->[1]";
 
-		if ( my $fh = bn::http::req
-		     POST => "$_->[1]",
-		     "Content-Length: 2097152\015\012"
-			) {
+		if (my $fh = bn::http::req POST => "$_->[1]", "Content-Length: 2097152\015\012") {
 			my $nul = "\x00" x 4096;
 
 			bn::io::xwrite $fh, $nul for 1 .. 128 / 4;
@@ -199,11 +179,8 @@ sub test
 		$_->[5]
 	} @servers;
 
-	bn::log
-		"speedtest: $lat $lon $isp $servers[0][3] $download $upload $ping";
-	($lat + 0, $lon + 0, $isp, $servers[0][3], $download, $upload,
-	 int 1000 * $ping
-		);
+	bn::log "speedtest: $lat $lon $isp $servers[0][3] $download $upload $ping";
+	($lat + 0, $lon + 0, $isp, $servers[0][3], $download, $upload, int 1000 * $ping);
 }
 
 1

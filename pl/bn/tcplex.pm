@@ -133,32 +133,26 @@ while ((my ($ch, $len, $data) = unpack "C*", bn::io::xread $fh, 2, 120) == 2) {
 				bn::func::tcp_connect_ $host, $port, sub {
 					my ($fh) = @_;
 
-					$add_channel->(
-						$id, $fh, $! != Errno::ETIMEDOUT
-					);
+					$add_channel->($id, $fh, $! != Errno::ETIMEDOUT);
 				}, $timeout;
 				()
 
 			} elsif ($msg->[0] == 2) {    # listen-start
 				my (undef, $id, $port) = @$msg;
 
-				$listener{$id} =
-					AnyEvent::Socket::tcp_server undef,
-					$port, sub {
+				$listener{$id} = AnyEvent::Socket::tcp_server undef, $port, sub {
 					@ch
 						or return;
 
 					$add_channel->($id, $fh, $host, $port);
-					};
+				};
 
 			} elsif ($msg->[0] == 3) {    # listen-stop
 				delete $listener{ $msg->[1] };
 
 			} elsif ($msg->[0] == 4) {
-				setsockopt $fh, Socket::SOL_SOCKET,
-					Socket::SO_RCVBUF, $msg->[1];
-				setsockopt $fh, Socket::SOL_SOCKET,
-					Socket::SO_SNDBUF, $msg->[2];
+				setsockopt $fh, Socket::SOL_SOCKET, Socket::SO_RCVBUF, $msg->[1];
+				setsockopt $fh, Socket::SOL_SOCKET, Socket::SO_SNDBUF, $msg->[2];
 
 			}
 		}

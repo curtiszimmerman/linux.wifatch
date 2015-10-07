@@ -35,8 +35,7 @@ sub on($$)
 
 	defined wantarray
 		? Guard::guard {delete $reg{$type}{$id}}
-		: (
-		);
+		: ();
 }
 
 sub inject($@)

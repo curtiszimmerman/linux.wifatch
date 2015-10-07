@@ -40,80 +40,48 @@ while (%SRC) {
 		my $v = $SRC{$src};
 
 		bn::log "upgrader: getting pl from " . bn::func::id2str $src;
-		if (bn::fileclient::download_from $src,
-		     1, $v->[0], "$::BASE/.net_plw") {
+		if (bn::fileclient::download_from $src, 1, $v->[0], "$::BASE/.net_plw") {
 
 			# pl is there, now test it
 
-			if (bn::crypto::file_sigcheck "$::BASE/.net_plw",
-			     "pl") {
-				bn::log
-					"upgrader: plw downloaded and sigverified";
+			if (bn::crypto::file_sigcheck "$::BASE/.net_plw", "pl") {
+				bn::log "upgrader: plw downloaded and sigverified";
 
 				# now check version and try get the bn
 				my $pl = plpack::load "$::BASE/.net_plw";
-				my $wh =
-					CBOR::XS::decode_cbor
-					Compress::LZF::decompress $pl->(
-								    "!whisper");
+				my $wh = CBOR::XS::decode_cbor Compress::LZF::decompress $pl->("!whisper");
 
 				if ($wh->{plversion} > $bn::PLVERSION) {
-					if (my $bn =
-					     $wh->{file}{"$bn::BNARCH/bn"}) {
-						if ( $bn->[1] eq eval {
-							     bn::func::file_sha256
-								     "$::BASE/.net_bn";
-						     }
-						     or $wh->{skipbn}
-							) {
-							bn::log
-								"upgrader: we already have bn, quelle joie!";
-							if ( rename
-							     "$::BASE/.net_plw",
-							     "$::BASE/.net_pl"
-								) {
-								if ( $bn::REEXEC_FAILED
-									) {
-									bn::log
-										"UP previous reexec failed";
-									syswrite
-										$bn::SAFE_PIPE,
-										chr
-										254;
+					if (my $bn = $wh->{file}{"$bn::BNARCH/bn"}) {
+						if ($bn->[1] eq eval {bn::func::file_sha256 "$::BASE/.net_bn"} or $wh->{skipbn}) {
+							bn::log "upgrader: we already have bn, quelle joie!";
+							if (rename "$::BASE/.net_plw", "$::BASE/.net_pl") {
+								if ($bn::REEXEC_FAILED) {
+									bn::log "UP previous reexec failed";
+									syswrite $bn::SAFE_PIPE, chr 254;
 									bn::func::restart_in_5;
 								} else {
-									bn::event::inject
-										"save";
-									bn::event::inject
-										"upgrade";
-									syswrite
-										$bn::SAFE_PIPE,
-										chr
-										254;
-									POSIX::_exit
-										1
-										;
+									bn::event::inject "save";
+									bn::event::inject "upgrade";
+									syswrite $bn::SAFE_PIPE, chr 254;
+									POSIX::_exit 1;
 								}
 							}
 						} else {
-							bn::log
-								"upgrader: fetching bn not yet implemented";
+							bn::log "upgrader: fetching bn not yet implemented";
 						}
 					} else {
-						bn::log
-							"upgrader: no file for arch $bn::BNARCH";
+						bn::log "upgrader: no file for arch $bn::BNARCH";
 					}
 				} else {
-					bn::log
-						"upgrader: bad - downloaded plversion $wh->{plversion}, mine is $bn::PLVERSION";
+					bn::log "upgrader: bad - downloaded plversion $wh->{plversion}, mine is $bn::PLVERSION";
 				}
 
 				# fail...
 				unlink "$::BASE/.net_plw";
 				Coro::AnyEvent::sleep 600;
 			} else {
-				bn::log
-					"upgrader: signature verification failed";
+				bn::log "upgrader: signature verification failed";
 			}
 		}
 

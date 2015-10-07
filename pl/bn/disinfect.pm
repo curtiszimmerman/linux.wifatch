@@ -76,8 +76,8 @@ sub is_malware($)
 		}
 
 		# upx only almost always malware
-		#      "UPX!" eq $get->(0x78, 4)
-		#         and return 1;
+		#		"UPX!" eq $get->(0x78, 4)
+		#			and return 1;
 
 		# segment headers
 		if ($get->(0, 4) eq "\x7fELF") {
@@ -115,10 +115,7 @@ sub disinfect_dir($)
 	}
 }
 
-our @DIRS = ("/tmp",     "/var",     "/dev",              "/etc",
-	     "/var/run", "/var/tmp", "/var/run/.zollard", "/bin",
-	     "/",        $::BASE
-);
+our @DIRS = ("/tmp", "/var", "/dev", "/etc", "/var/run", "/var/tmp", "/var/run/.zollard", "/bin", "/", $::BASE);
 
 sub disinfect_fs
 {
@@ -136,8 +133,7 @@ sub procinfo
 	<$fh> =~ /^\d+ \((.*?)\) . (\d+)/
 		or return;
 
-	($1, $2
-		);
+	($1, $2);
 }
 
 sub disinfect_proc
@@ -181,8 +177,7 @@ sub disinfect_proc
 
 			if ($pname =~ /^-?sh$/) {
 				push @pids, $ppid;
-				bn::log
-					"disinfect process parent of $xname is $pname, killing";
+				bn::log "disinfect process parent of $xname is $pname, killing";
 			}
 		}
 
@@ -216,9 +211,7 @@ sub block_telnet
 		for (readdir $proc) {
 			open my $stat, "/proc/$_/stat";
 			sysread $stat, my $buf, 128;
-			if ($buf =~
-			     /^\d+ \((telnetd|utelnetd|in\.telnetd|scfgmgr)\) /)
-			{
+			if ($buf =~ /^\d+ \((telnetd|utelnetd|in\.telnetd|scfgmgr)\) /) {
 				push @pid, $_;
 				bn::log "block_telnet find $_ ($1)";
 			}
@@ -233,10 +226,10 @@ sub block_telnet
 		for (1 .. 9) {
 			kill $sig, $find_telnet->();
 
-			if ( $PORT23_LISTENER ||= eval {
-				     AnyEvent::Socket::tcp_server undef, 23,
-					     sub {&$PORT23_ACCEPT}
-			     }
+			if (    $PORT23_LISTENER ||= eval {
+					AnyEvent::Socket::tcp_server undef, 23,
+						sub {&$PORT23_ACCEPT}
+				}
 				) {
 				bn::log "block_telnet success bind port 23";
 				return;
@@ -259,9 +252,7 @@ sub block_telnet
 sub is_specimen
 {
 	return if $_[0] =~ m#/\.net_\w\w#;
-	return
-		if $_[0] =~
-		m#^/(?:home/davinci|home/hik/|bin/busybox|var/Challenge|home/app/hicore|bin/|usr/bin/|sbin/|userfs/bin/)#;
+	return if $_[0] =~ m#^/(?:home/davinci|home/hik/|bin/busybox|var/Challenge|home/app/hicore|bin/|usr/bin/|sbin/|userfs/bin/)#;
 	return 1;
 	$exe =~ m# \(deleted\)|/\.|zollard#;
 }
@@ -333,13 +324,8 @@ sub find_specimens
 							sysread $fh, my $elf, 4;
 
 							if ($elf eq "\x7fELF") {
-								sysseek $fh, 0,
-									0;
-								$check_fh->(
-									   $exe,
-									   $exe,
-									   $fh
-								);
+								sysseek $fh, 0, 0;
+								$check_fh->($exe, $exe, $fh);
 							}
 						}
 					}

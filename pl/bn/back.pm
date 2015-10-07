@@ -63,9 +63,7 @@ sub _snd
 		}
 
 		$peer //= do {
-			my @bc = eval {
-				unpack "(a6)*", $bn::xx::PL[4]->("nodes");
-				}
+			my @bc = eval {unpack "(a6)*", $bn::xx::PL[4]->("nodes")}
 				or return;
 
 			my ($host, $port) = unpack "a4 n", $bc[rand @bc];

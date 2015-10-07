@@ -49,22 +49,13 @@ bn::event::on port_connect_Ahg2Goow => sub {
 	$flags |= 0x04 if $bn::STORAGE;
 	$flags |= 0x08 if $bn::cfg{attention};
 
-	#   $flags |= 0x10 if $bn::VERSION >= 2; # ecdsa_verify
+	#	$flags |= 0x10 if $bn::VERSION >= 2; # ecdsa_verify
 	# 0x20 # tn is running
 	$flags |= 0x40 if $BN_UPTODATE;
 
 	my $tcp = $bn::cfg{speedtest};
 
-	my $msg = pack "a8 N/a", "Xe8shAh5",
-		CBOR::XS::encode_cbor [
-		    1,                  $bn::cfg{id},
-		    $flags,             $bn::BNARCH,
-		    $bn::BNVERSION + 0, $bn::PLVERSION + 0,
-		    [keys %bn::hpv::as], int 10000 * ($bn::ntp::factor - 1),
-		    bn::func::free_mem, $bn::STORAGE && &bn::storage::avail,
-		    $tcp->[5], $tcp->[6],
-		    $bn::cfg{tnport},
-		];
+	my $msg = pack "a8 N/a", "Xe8shAh5", CBOR::XS::encode_cbor [1, $bn::cfg{id}, $flags, $bn::BNARCH, $bn::BNVERSION + 0, $bn::PLVERSION + 0, [keys %bn::hpv::as], int 10000 * ($bn::ntp::factor - 1), bn::func::free_mem, $bn::STORAGE && &bn::storage::avail, $tcp->[5], $tcp->[6], $bn::cfg{tnport},];
 
 	bn::io::xwrite $_[0], $msg;
 };
@@ -108,33 +99,15 @@ sub run
 						or return;
 
 					Coro::async {
-						setsockopt $fh,
-							Socket::SOL_SOCKET(),
-							Socket::SO_KEEPALIVE(),
-							1;
+						setsockopt $fh, Socket::SOL_SOCKET(), Socket::SO_KEEPALIVE(), 1;
 						if (exists $reg{$id}) {
-							eval {
-								$reg{$id}->(
-									  $fh,
-									  $host,
-									  $port
-								);
-							};
+							eval {$reg{$id}->($fh, $host, $port);};
 
-							bn::log
-								"port listener $id crash: $@"
+							bn::log "port listener $id crash: $@"
 								if $@;
 						} else {
-							bn::event::inject
-								"port_connect_$id"
-								=> $fh,
-								$host, $port,
-								$id;
-							bn::event::inject
-								port_connect =>
-								$id,
-								$fh, $host,
-								$port;
+							bn::event::inject "port_connect_$id" => $fh, $host, $port, $id;
+							bn::event::inject port_connect       => $id, $fh,   $host, $port;
 						}
 					};
 				};
@@ -144,18 +117,14 @@ sub run
 		if ($tcp_listener) {
 			socket my $udp, Socket::AF_INET, Socket::SOCK_DGRAM, 0;
 
-			if (bind $udp, Socket::pack_sockaddr_in $port,
-			     "\0\0\0\0") {
+			if (bind $udp, Socket::pack_sockaddr_in $port, "\0\0\0\0") {
 				$UDP = $udp;
 
 				$udp_listener = AE::io $udp, 0, sub {
-					my $peer = recv $udp, my $pkt,
-						$MAX_UDP_PACKET, 0
+					my $peer = recv $udp, my $pkt, $MAX_UDP_PACKET, 0
 						or return;
 
-					bn::event::inject
-						port_packet => $pkt,
-						$peer;
+					bn::event::inject port_packet => $pkt, $peer;
 				};
 
 				bn::iptables::accept_port tcp => $port;

@@ -53,9 +53,7 @@ sub run
 
 	for my $a (List::Util::shuffle 0 .. 255) {
 		bn::synscan::send
-			map pack("N", $_ << 21 | $a << 13 | $seg),
-			List::Util::shuffle 8 .. 79, 88 .. 1015,
-			1024 .. 1783;    # 1. - 223. sans 10, 127
+			map pack("N", $_ << 21 | $a << 13 | $seg), List::Util::shuffle 8 .. 79, 88 .. 1015, 1024 .. 1783;    # 1. - 223. sans 10, 127
 	}
 
 	Coro::AnyEvent::sleep $bn::synscan::WAIT;

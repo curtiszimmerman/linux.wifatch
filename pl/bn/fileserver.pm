@@ -36,8 +36,7 @@ my ($type, $id) = @_;
 
 if ($type == 1) {    # pl
 	my $pl = plpack::load "$::BASE/.net_pl";
-	my $wh = CBOR::XS::decode_cbor Compress::LZF::decompress $pl->(
-								    "!whisper");
+	my $wh = CBOR::XS::decode_cbor Compress::LZF::decompress $pl->("!whisper");
 
 	$wh->{plversion} >= $id
 		or return;
@@ -75,7 +74,7 @@ my ($type, $id) = unpack "Ca*", bn::io::xread $_[0], $len;
 my ($reply) = find_file $type % 16, $id
 	or return;
 
-#   bn::log "fileserver: req $type,$id";
+#	bn::log "fileserver: req $type,$id";
 
 open my $fh, "<", $reply
 	or return;
@@ -116,8 +115,8 @@ my ($fh, $host, $port, $req) = @_;
 
 sysread $fh, $req, 4096, length $req;
 
-#   $req .= bn::io::xread $fh, 1
-#      until $req =~ /\015\012\015\012/;
+#	$req .= bn::io::xread $fh, 1
+#		until $req =~ /\015\012\015\012/;
 
 # assume the first segment has enough header
 
@@ -134,13 +133,7 @@ my ($reply) = find_file $type, $id
 open my $hd, "<", $reply
 	or return return syswrite $fh, "HTTP/1.0 404 2\015\012\015\012";
 
-syswrite $fh,
-	  "HTTP/1.0 200 1\015\012"
-	. "Content-Type: application/octet-stream\015\012"
-	. "Content-Length: "
-	. (-s $hd)
-	. "\015\012"
-	. "\015\012";
+syswrite $fh, "HTTP/1.0 200 1\015\012" . "Content-Type: application/octet-stream\015\012" . "Content-Length: " . (-s $hd) . "\015\012" . "\015\012";
 
 my $buf;
 while (sysread $hd, $buf, 4096) {
@@ -164,11 +157,11 @@ if ("\x00\x04" eq substr $pkt, 0, 2) {
 
 } elsif (
 	$pkt =~ m%
-      ^
-      \x00\x01
-      bntftp / (\d+) / ([0-9a-f]+) \x00
-      octet \x00
-   %x
+		^
+		\x00\x01
+		bntftp / (\d+) / ([0-9a-f]+) \x00
+		octet \x00
+	%x
 	) {
 	# isa tftp
 	my ($type, $id) = ($1, $2);
@@ -192,8 +185,7 @@ if ("\x00\x04" eq substr $pkt, 0, 2) {
 
 		$tw = EV::timer 0, 3, sub {
 			if (++$retry < 20) {    # 20s
-				send $bn::port::UDP,
-					(pack "nna*", 3, $seq, $data), 0, $peer;
+				send $bn::port::UDP, (pack "nna*", 3, $seq, $data), 0, $peer;
 			} else {
 
 				# ack timeout
@@ -237,9 +229,8 @@ sub register($$)
 	$reg{$name} = $reg{$sha} = [$path, $sha];
 }
 
--e "$::BASE/.net_pl" and register "base/pl"             => "$::BASE/.net_pl";
--e "$::BASE/.net_$_" and register "base/$bn::BNARCH/$_" => "$::BASE/.net_$_"
-	for qw(rf dl tn bn);
+-e "$::BASE/.net_pl" and register "base/pl" => "$::BASE/.net_pl";
+-e "$::BASE/.net_$_" and register "base/$bn::BNARCH/$_" => "$::BASE/.net_$_" for qw(rf dl tn bn);
 
 1
 

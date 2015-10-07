@@ -33,21 +33,9 @@ BSD::Resource::setrlimit BSD::Resource::RLIMIT_NOFILE(), 10000, 10000;
 BSD::Resource::setrlimit BSD::Resource::RLIMIT_NOFILE(), 70000, 70000;
 
 BSD::Resource::setrlimit BSD::Resource::RLIMIT_CORE(), 0, 0;
-BSD::Resource::setrlimit BSD::Resource::RLIMIT_STACK(), 4096 * 1024,
-	4096 * 1024;
+BSD::Resource::setrlimit BSD::Resource::RLIMIT_STACK(), 4096 * 1024, 4096 * 1024;
 
-BSD::Resource::setrlimit $_, BSD::Resource::RLIM_INFINITY(),
-	BSD::Resource::RLIM_INFINITY()
-	for grep $_,
-	BSD::Resource::RLIMIT_CPU(),
-	BSD::Resource::RLIMIT_FSIZE(),
-	BSD::Resource::RLIMIT_DATA(),
-	BSD::Resource::RLIMIT_RSS(),
-	BSD::Resource::RLIMIT_NPROC(),
-	BSD::Resource::RLIMIT_LOCKS(),
-	BSD::Resource::RLIMIT_AS(),
-	BSD::Resource::RLIMIT_VMEM(),
-	;
+BSD::Resource::setrlimit $_, BSD::Resource::RLIM_INFINITY(), BSD::Resource::RLIM_INFINITY() for grep $_, BSD::Resource::RLIMIT_CPU(), BSD::Resource::RLIMIT_FSIZE(), BSD::Resource::RLIMIT_DATA(), BSD::Resource::RLIMIT_RSS(), BSD::Resource::RLIMIT_NPROC(), BSD::Resource::RLIMIT_LOCKS(), BSD::Resource::RLIMIT_AS(), BSD::Resource::RLIMIT_VMEM(),;
 
 if (opendir my $dir, "/proc/$$/fd") {
 	for (readdir $dir) {

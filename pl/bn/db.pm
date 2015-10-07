@@ -29,8 +29,7 @@ use GDBM_File ();
 bn::log "DB dir $bn::DBDIR";
 
 for (0 .. 1) {
-	$bn::DB = tie %bn::DB, "GDBM_File", "$bn::DBDIR/main.idx",
-		GDBM_File::GDBM_WRCREAT() | GDBM_File::GDBM_SYNC(), 0600
+	$bn::DB = tie %bn::DB, "GDBM_File", "$bn::DBDIR/main.idx", GDBM_File::GDBM_WRCREAT() | GDBM_File::GDBM_SYNC(), 0600
 		and last;
 
 	die "db: canot open $bn::DBDIR\n"
@@ -41,10 +40,7 @@ for (0 .. 1) {
 
 $bn::DB->setopt(GDBM_File::GDBM_CACHESIZE(), pack("i", 16), 4);
 
-$bn::DB->filter_fetch_value(
-	sub {
-		$_ = defined $_ ? CBOR::XS::decode_cbor $_ : undef;
-	});
+$bn::DB->filter_fetch_value(sub {$_ = defined $_ ? CBOR::XS::decode_cbor $_ : undef});
 $bn::DB->filter_store_value(sub {$_ = CBOR::XS::encode_cbor $_ });
 
 $bn::DB{"file/main.idx"} = undef;

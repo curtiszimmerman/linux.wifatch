@@ -21,11 +21,10 @@ package bn::crypto;
 
 sub random_init
 {
-	#   my $guard = bn::func::get_mem 2, 86400
-	#      or return;
+	#	my $guard = bn::func::get_mem 2, 86400
+	#		or return;
 
-	AnyEvent::Fork->new->require("bn::random_init")
-		->run("run", Coro::rouse_cb);
+	AnyEvent::Fork->new->require("bn::random_init")->run("run", Coro::rouse_cb);
 
 	my ($fh) = Coro::rouse_wait;
 

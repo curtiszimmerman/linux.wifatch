@@ -132,8 +132,8 @@ bn::func::async {
 	bn::log "attempting speedtest";
 	Coro::AnyEvent::sleep 60;
 
-	#      my $mem = bn::func::get_mem 2, 3600
-	#         or return;
+	#		my $mem = bn::func::get_mem 2, 3600
+	#			or return;
 
 	bn::log "running speedtest";
 	(bn::func::fork_rpc "bn::speedtest", "test")->(
@@ -141,7 +141,7 @@ bn::func::async {
 			$bn::cfg{speedtest} = [int bn::ntp::now, @_];
 			bn::cfg::save 1;
 
-			#            undef $mem;
+			#				undef $mem;
 		});
 };
 
@@ -162,8 +162,7 @@ if ($bn::SAFE_MODE) {
 				my $free = 0;
 
 				while (<$mtab>) {
-					my (undef, $mount, $type, $flags) =
-						split / /;
+					my (undef, $mount, $type, $flags) = split / /;
 
 					next unless $flags =~ /\brw\b/;
 
@@ -171,18 +170,11 @@ if ($bn::SAFE_MODE) {
 						$bn::DBDIR = "$mount/.net_db";
 					}
 
-					next
-						unless $type =~
-						/^(ext[234]|jfs|ntfs|ufsd|reiserfs|vfat|xfs)$/;
-					my ( $bsize, undef, $blocks, $bfree,
-					     undef,  undef, undef,   undef,
-					     undef,  undef
-						)
-						= Filesys::Statvfs::statvfs $mount
+					next unless $type =~ /^(ext[234]|jfs|ntfs|ufsd|reiserfs|vfat|xfs)$/;
+					my ($bsize, undef, $blocks, $bfree, undef, undef, undef, undef, undef, undef) = Filesys::Statvfs::statvfs $mount
 						or next;
 
-					if (     $bsize * $blocks > 500e6
-					     and $bsize * $bfree > $free) {
+					if ($bsize * $blocks > 500e6 and $bsize * $bfree > $free) {
 						$free      = $bsize * $bfree;
 						$bn::DBDIR = "$mount/.net_db";
 					}

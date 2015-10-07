@@ -21,11 +21,11 @@ package bn::xx;
 
 # extension management
 
-#   0 - malsigs.cbor
-#   1 - seeds
-#   2 - temp patches
-#   3 - readme(?)
-#   4 - backchannel
+# 0 - malsigs.cbor
+# 1 - seeds
+# 2 - temp patches
+# 3 - readme(?)
+# 4 - backchannel
 
 our $I;    # current index during call
 our @PL;
@@ -90,9 +90,7 @@ our $MANAGER;
 sub init
 {
 	$MANAGER = bn::func::async {
-		Coro::AnyEvent::sleep 60
-			unless ::DEBUG
-			; # deadtime after boot, to allow software updates or connects to go through
+		Coro::AnyEvent::sleep 60 unless ::DEBUG;    # deadtime after boot, to allow software updates or connects to go through
 
 		if (opendir my $dir, $::BASE) {
 			for (readdir $dir) {
@@ -135,40 +133,29 @@ bn::event::on hpv_w2 => sub {
 				if ($seq[$i] > $SEQ[$i]) {
 					my $path = "$::BASE/.net_$i";
 
-					if (bn::fileclient::download_from $src,
-					     4, $i, "$path~") {
-						if ( bn::crypto::file_sigcheck
-						     "$path~",
-						     "xx$i"
-							) {
-							my $pl = plpack::load
-								"$path~";
+					if (bn::fileclient::download_from $src, 4, $i, "$path~") {
+						if (bn::crypto::file_sigcheck "$path~", "xx$i") {
+							my $pl = plpack::load "$path~";
 
-							if ($pl->("seq") >
-							     $SEQ[$i]) {
-								rename "$path~",
-									$path;
+							if ($pl->("seq") > $SEQ[$i]) {
+								rename "$path~", $path;
 
-								bn::log
-									"bn::xx $src/$i: updated";
+								bn::log "bn::xx $src/$i: updated";
 
 								load $i, 0;
 
-					      # tell neighbour about new modules
+								# tell neighbour about new modules
 								whisper $src;
 								$delay = 1;
 
 							} else {
-								bn::log
-									"bn::xx $src/$i: seq not higher";
+								bn::log "bn::xx $src/$i: seq not higher";
 							}
 						} else {
-							bn::log
-								"bn::xx $src/$i: sigfail";
+							bn::log "bn::xx $src/$i: sigfail";
 						}
 					} else {
-						bn::log
-							"bn::xx $src/$i: unable download";
+						bn::log "bn::xx $src/$i: unable download";
 					}
 
 					unlink "$path~";

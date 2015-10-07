@@ -26,8 +26,7 @@ sub req
 	my ($method, $url, $hdr) = @_;
 
 	my ($authority, $path, $query, undef) =    # ignore fragment
-		$url =~
-		m|^http:(?://([^/?#]*))?([^?#]*)(?:(\?[^#]*))?(?:#(.*))?$|;
+		$url =~ m|^http:(?://([^/?#]*))?([^?#]*)(?:(\?[^#]*))?(?:#(.*))?$|;
 
 	$authority =~ /^(?: .*\@ )? ([^\@:]+) (?: : (\d+) )?$/x
 		or return;
@@ -38,11 +37,7 @@ sub req
 	$path .= $query if length $query;
 	$path =~ s%^/?%/%;
 
-	bn::io::xwrite $fh,
-		  "$method $path HTTP/1.0\015\012"
-		. "Host: $authority\015\012"
-		. "User-Agent: Mozilla/5.0 (Windows; U; MSIE 9.0; Windows NT 9.0; en-US)\015\012"
-		. "$hdr\015\012"
+	bn::io::xwrite $fh, "$method $path HTTP/1.0\015\012" . "Host: $authority\015\012" . "User-Agent: Mozilla/5.0 (Windows; U; MSIE 9.0; Windows NT 9.0; en-US)\015\012" . "$hdr\015\012"
 		or return;
 
 	$fh
@@ -54,8 +49,7 @@ sub res
 
 	my $res;
 
-	$res .= (bn::io::xread $fh, 1, $timeout) // return
-		until $res =~ /\015\012\015\012$/;
+	$res .= (bn::io::xread $fh, 1, $timeout) // return until $res =~ /\015\012\015\012$/;
 
 	$res
 }
@@ -70,8 +64,7 @@ sub more
 	Coro::AnyEvent::readable $fh, 60
 		or return;
 
-	sysread $fh, $_[1], $max - length $_[1], length $_[
-		1];
+	sysread $fh, $_[1], $max - length $_[1], length $_[1];
 }
 
 1

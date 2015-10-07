@@ -81,9 +81,7 @@ sub republish
 
 sub avail
 {
-	my ( $bsize, undef, $blocks, $bfree, undef,
-	     undef,  undef, undef,   undef,  undef)
-		= Filesys::Statvfs::statvfs $bn::DBDIR
+	my ($bsize, undef, $blocks, $bfree, undef, undef, undef, undef, undef, undef) = Filesys::Statvfs::statvfs $bn::DBDIR
 		or return 0;
 
 	$bfree  *= $bsize;

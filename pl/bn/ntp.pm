@@ -34,8 +34,7 @@ sub get_unixtime_from($)
 	socket my $fh, Socket::PF_INET, Socket::SOCK_DGRAM, 0
 		or return;
 
-	connect $fh, Socket::sockaddr_in 123,
-		AnyEvent::Socket::parse_address $host
+	connect $fh, Socket::sockaddr_in 123, AnyEvent::Socket::parse_address $host
 		or return;
 
 	for (1 .. 5) {
@@ -93,8 +92,7 @@ sub update()
 	my $ntp  = AE::now + ntp_diff;
 
 	if ($next_update) {
-		my $diff = abs 1 -
-			($time - $last_time) / ($ntp - $last_ntp) * $factor;
+		my $diff = abs 1 - ($time - $last_time) / ($ntp - $last_ntp) * $factor;
 
 		if ($diff > $MAX_DIFF) {
 			$interval *= 0.5 if $interval > $MIN_INTERVAL;
@@ -102,12 +100,7 @@ sub update()
 			$interval *= 2.0 if $interval < $MAX_INTERVAL;
 		}
 
-		$factor =
-			$alpha *
-			$factor +
-			(1 - $alpha) *
-			($ntp - $last_ntp) /
-			($time - $last_time);
+		$factor = $alpha * $factor + (1 - $alpha) * ($ntp - $last_ntp) / ($time - $last_time);
 
 		$factor = $MIN_FACTOR if $factor < $MIN_FACTOR;
 		$factor = $MAX_FACTOR if $factor > $MAX_FACTOR;

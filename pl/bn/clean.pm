@@ -40,20 +40,18 @@ sub isbnfile($)
 
 sub fileid($)
 {
-	join ",", (stat shift)[
-		0, 1
-		];
+	join ",", (stat shift)[0, 1];
 }
 
 sub rm
 {
 	return if exists $keep{ fileid $_[0] };
 
-	#   if (isbnfile $_[0]) {
+	#	if (isbnfile $_[0]) {
 	warn "clean $_[0]\n" if -e $_[0];
 	unlink $_[0];
 
-	#   }
+	#	}
 }
 
 sub clean

@@ -51,8 +51,7 @@ sub isonline
 		my ($fh) = Coro::rouse_wait
 			or next;
 
-		syswrite $fh,
-			"GET / HTTP/1.0\015\012Host: $host\015\012\015\012";
+		syswrite $fh, "GET / HTTP/1.0\015\012Host: $host\015\012\015\012";
 
 		Coro::AnyEvent::readable $fh, 20;
 		sysread $fh, my $buf, 64;
@@ -93,12 +92,9 @@ sub init
 						++$bn::cfg{cnt_ipchange};
 						bn::cfg::save;
 
-						($OWN_IPBIN, my $old) =
-							($ipbin, $OWN_IPBIN);
+						($OWN_IPBIN, my $old) = ($ipbin, $OWN_IPBIN);
 						bn::log "IPCHANGE";
-						bn::event::inject
-							ipchange => $ipbin,
-							$old;
+						bn::event::inject ipchange => $ipbin, $old;
 					}
 
 					Coro::AnyEvent::sleep 60;

@@ -31,12 +31,11 @@ sub compile
 	my $name = substr $path, $idx + 2;
 
 	my $sub = eval "
-      package $pkg;
-      sub $info->[1] {
+		package $pkg;
+		fo->[1] {
 #line 1 \"$pkg\::$name$info->[1]\"
-         $info->[2]
-      }
-   ";
+		o->[2]
+	";
 	die $@ if $@;
 
 	$sub

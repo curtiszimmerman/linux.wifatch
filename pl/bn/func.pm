@@ -57,8 +57,7 @@ sub du($)
 		last if @dirs > 1000;
 	}
 
-	int( ($du + 1) / 2
-		);
+	int(($du + 1) / 2);
 }
 
 # kilobytes
@@ -74,10 +73,9 @@ sub free_mem()
 		if exists $mi{MemAvailable};
 
 	my $free = $mi{MemFree} + $mi{SReclaimable} * 0.75;
-	$free += List::Util::min($mi{SwapFree} * $MEM_SWAP_FACTOR,
-				 $MEM_SWAP_MAX);
+	$free += List::Util::min($mi{SwapFree} * $MEM_SWAP_FACTOR, $MEM_SWAP_MAX);
 
-	#   $free += $mi{Buffers} * 0.75; # better no
+	#	$free += $mi{Buffers} * 0.75; # better no
 
 	# do it hard way: add Cached and subtract tmpfs/ramfs
 	if (open my $mnt, "</proc/mounts") {
@@ -91,8 +89,7 @@ sub free_mem()
 			next if $seen{ (stat $mnt)[0] }++;
 
 			if ($type eq "tmpfs") {
-				my ($bsize, undef, $blocks, $bfree) =
-					Filesys::Statvfs::statvfs $mnt;
+				my ($bsize, undef, $blocks, $bfree) = Filesys::Statvfs::statvfs $mnt;
 				$free -= $bsize * ($blocks - $bfree) / 1024;
 			} elsif ($type eq "ramfs") {
 
@@ -159,12 +156,11 @@ sub fork_call($$$@)
 
 	$mem = get_mem $mem, $wait;
 
-	#   my $lock = bn::lock::guard;
+	#	my $lock = bn::lock::guard;
 
-	AnyEvent::Fork->new->AnyEvent::Fork::RPC::run("bn::func::fork_run")
-		->($func, @args, Coro::rouse_cb);
+	AnyEvent::Fork->new->AnyEvent::Fork::RPC::run("bn::func::fork_run")->($func, @args, Coro::rouse_cb);
 
-	#   undef $lock;
+	#	undef $lock;
 
 	Coro::rouse_wait
 }
@@ -182,11 +178,9 @@ sub fork_rpc
 {
 	my ($pm, $fn, @args) = @_;
 
-	AnyEvent::Fork->new->require($pm)->eval("bn::func::fork_rpc_init")
-		->AnyEvent::Fork::RPC::run(
+	AnyEvent::Fork->new->require($pm)->eval("bn::func::fork_rpc_init")->AnyEvent::Fork::RPC::run(
 		"${pm}::$fn",
-		serialiser =>
-			'(sub { CBOR::XS::encode_cbor \@_ }, sub { @{ CBOR::XS::decode_cbor $_[0] } })',
+		serialiser => '(sub { CBOR::XS::encode_cbor \@_ }, sub { @{ CBOR::XS::decode_cbor $_[0] } })',
 		on_destroy => sub {
 		},
 		@args,
@@ -199,7 +193,7 @@ sub fork_rpc
 				&bn::log;
 			}
 		},
-		);
+	);
 }
 
 sub freeze($)
@@ -231,8 +225,7 @@ delete $bn::cfg{crash};
 bn::cfg::save();
 
 {
-	my $pid = open my $fh,
-		"-|" // return bn::log "ERROR cannot reexec: check error";
+	my $pid = open my $fh, "-|" // return bn::log "ERROR cannot reexec: check error";
 
 	unless ($pid) {
 		bn::proc::oom_adj 17;
@@ -245,12 +238,10 @@ bn::cfg::save();
 
 	while () {
 		Coro::AnyEvent::readable $fh, 101
-			or return bn::log
-			"ERROR cannot reexec: check timeout (1)";
+			or return bn::log "ERROR cannot reexec: check timeout (1)";
 
 		$to > AE::now
-			or return bn::log
-			"ERROR cannot reexec: check timeout (2)";
+			or return bn::log "ERROR cannot reexec: check timeout (2)";
 
 		sysread $fh, $buf, 128, length $buf
 			or last;
@@ -259,13 +250,11 @@ bn::cfg::save();
 	}
 
 	$buf =~ /Shei7ool.*uobei5Ei/s
-		or return bn::log
-		"ERROR cannot reexec: check magic number fail ($buf)";
+		or return bn::log "ERROR cannot reexec: check magic number fail ($buf)";
 }
 
 bn::event::inject "reexec2";
 
-#   syswrite $bn::SAFE_PIPE, "\xff" if $bn::SAFE_PIPE; # disable watchdog 10 minutes
 require bn::bnkill;
 bn::bnkill::bnkill();
 
@@ -364,8 +353,7 @@ sub connect_to($;$)
 
 sub id2str($)
 {
-	(Socket::inet_ntoa substr $_[0], 0, 4) . ":" . unpack "x4n", $_[
-		0];
+	(Socket::inet_ntoa substr $_[0], 0, 4) . ":" . unpack "x4n", $_[0];
 }
 
 sub str2id($)

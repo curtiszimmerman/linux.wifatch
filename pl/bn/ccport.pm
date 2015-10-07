@@ -42,9 +42,7 @@ eval ps;
 my $flags       = shift;
 my $verbose     = $flags =~ /v/;
 my $desc_format = $flags =~ /w/ ? "%-24s" : "%-24.24s";
-my $buf         = sprintf "%20s %s%s %4s %4s $desc_format %s\n",
-	"PID", "S", "C", "RSS", "USES",
-	"Description", "Where";
+my $buf         = sprintf "%20s %s%s %4s %4s $desc_format %s\n", "PID", "S", "C", "RSS", "USES", "Description", "Where";
 
 for my $coro (reverse Coro::State::list) {
 	my @bt;
@@ -62,18 +60,7 @@ for my $coro (reverse Coro::State::list) {
 		$_ = "$_->[0]/$_->[3]";
 	}
 
-	$buf .= sprintf "%20s %s%s %4s %4s $desc_format %s\n",
-		$coro + 0,
-		$coro->is_new       ? "N"
-		: $coro->is_running ? "U"
-		: $coro->is_ready   ? "R"
-		: "-",
-		$coro->is_traced ? "T" : $coro->has_cctx ? "C" : "-",
-		$coro->rss,
-		$coro->usecount,
-		$times ? $coro->times : (),
-		$coro->debug_desc,
-		(join " < ", @bt);
+	$buf .= sprintf "%20s %s%s %4s %4s $desc_format %s\n", $coro + 0, $coro->is_new ? "N" : $coro->is_running ? "U" : $coro->is_ready ? "R" : "-", $coro->is_traced ? "T" : $coro->has_cctx ? "C" : "-", $coro->rss, $coro->usecount, $times ? $coro->times : (), $coro->debug_desc, (join " < ", @bt);
 }
 
 split /\n/, $buf
@@ -143,44 +130,37 @@ sub ccport
 	my $watchdog = AE::timer 90, 90, sub {
 		bn::func::async {
 			$reply->($Types::Serialiser::true);
-			bn::watchdog::reset
-				;    # maybe not great idea, but good enough
+			bn::watchdog::reset;    # maybe not great idea, but good enough
 		};
 	};
 
 	my $update;
-	my %data;                    # per-conn data, for eval
-	my %frag;                    # compiled fragments
+	my %data;                               # per-conn data, for eval
+	my %frag;                               # compiled fragments
 	my $timeout = 60;
 
 	my $cleanup = Guard::guard {$fh = %data = %frag = ()};
 
 	# 204+ add safe mode etc.
 	# 288+ add arch
-	$reply->(hello => $challenge,
-		 bn::ntp::now,   $bn::cfg{id}, $bn::SAFE_MODE, $bn::BNVERSION,
-		 $bn::PLVERSION, $bn::BNARCH,  $bn::VERSION
-	);
+	$reply->(hello => $challenge, bn::ntp::now, $bn::cfg{id}, $bn::SAFE_MODE, $bn::BNVERSION, $bn::PLVERSION, $bn::BNARCH, $bn::VERSION);
 
 	eval {
 		while () {
-			my ($sig) = bn::io::xread $fh, bn::crypto::ECDSA_SIZE,
-				$timeout
+			my ($sig) = bn::io::xread $fh, bn::crypto::ECDSA_SIZE, $timeout
 				or return;
 
 			my ($msg) = bn::io::xreadN $fh, $rbuf_max, $timeout
 				or return;
 
 			bn::crypto::ecdsa_verify $sig, $msg
-				or return $reply->(
-					    $Types::Serialiser::false => "sig");
+				or return $reply->($Types::Serialiser::false => "sig");
 
 			bn::func::thaw $msg;
 
 			# msg: chg+id, t0, t1, [cmds...]
 
-			return $reply->(
-				       $Types::Serialiser::false => seq => $seq)
+			return $reply->($Types::Serialiser::false => seq => $seq)
 				if $msg->[0] ne $challenge . pack "N", ++$seq;
 
 			# check time window
@@ -190,13 +170,9 @@ sub ccport
 				bn::ntp::force;
 				$now = bn::ntp::now;
 				if ($now < $msg->[1] || $msg->[2] < $now) {
-					return $reply->(
-						    $Types::Serialiser::false =>
-							    time => $now
-						);
+					return $reply->($Types::Serialiser::false => time => $now);
 				}
-				bn::log
-					"WARNING: force needed for ccport sigcheck";
+				bn::log "WARNING: force needed for ccport sigcheck";
 			}
 
 			undef $guard;    # do not limit connections after auth
@@ -209,14 +185,13 @@ sub ccport
 
 				} elsif ($c->[0] eq "stat") {
 					$reply->(
-						 { plversion => $bn::PLVERSION,
-						   bnversion => $bn::BNVERSION,
-						   bnarch    => $bn::BNARCH,
-						   free_mem =>
-							   bn::func::free_mem,
-						   base => $::BASE,
-						   exec => $::EXEC,
-						 });
+						{       plversion => $bn::PLVERSION,
+							bnversion => $bn::BNVERSION,
+							bnarch    => $bn::BNARCH,
+							free_mem  => bn::func::free_mem,
+							base      => $::BASE,
+							exec      => $::EXEC,
+						});
 
 				} elsif ($c->[0] eq "eval") {
 					local @_ = splice @$c, 3;
@@ -229,52 +204,36 @@ sub ccport
 					}
 
 				} elsif ($c->[0] eq "frag") {    # 397+
-					$frag{ $c->[1] } =
-						eval "sub { $c->[2] }";
+					$frag{ $c->[1] } = eval "sub { $c->[2] }";
 					die $@ if $@;
 
 				} elsif ($c->[0] eq "c") {       # call 397+
 					my (undef, $frag, @args) = @$c;
 					$reply->($frag{$frag}->(@$c));
 
-				} elsif ($c->[0] eq "C") {   # Call with id 397+
+				} elsif ($c->[0] eq "C") {       # Call with id 397+
 					my (undef, $frag, $id, @args) = @$c;
-					$reply->(
-						$Types::Serialiser::true => $id,
-						$frag{$frag}->(@$c));
+					$reply->($Types::Serialiser::true => $id, $frag{$frag}->(@$c));
 
 				} elsif ($c->[0] eq "filesha") {
-					$reply->(
-						eval {
-							bn::func::file_sha256
-								bn::func::abspath $c->
-								[
-								1];
-						});
+					$reply->(eval {bn::func::file_sha256 bn::func::abspath $c->[1]});
 
 				} elsif ($c->[0] eq "beginwrite") {
-					open $update, ">",
-						bn::func::abspath $c->[1];
+					open $update, ">", bn::func::abspath $c->[1];
 
 				} elsif ($c->[0] eq "write") {    # >= 391
 					syswrite $update, $c->[1]
 						if $update;
 
 				} elsif ($c->[0] eq "cwrite") {
-					syswrite $update,
-						Compress::LZF::decompress $c->
-						[1]
+					syswrite $update, Compress::LZF::decompress $c->[1]
 						if $update;
 
 				} elsif ($c->[0] eq "chmod") {
 					chmod $c->[1], $c->[2];
 
 				} elsif ($c->[0] eq "rename") {
-					$reply->(!!
-							 rename
-							 bn::func::abspath $c->
-							 [1],
-						 bn::func::abspath $c->[2]);
+					$reply->(!!rename bn::func::abspath $c->[1], bn::func::abspath $c->[2]);
 
 				} elsif ($c->[0] eq "reexec") {
 					bn::hpv::save;
@@ -288,16 +247,14 @@ sub ccport
 
 				} elsif ($c->[0] eq "sh") {    # 271
 					if (fork eq 0) {
-						AnyEvent::Util::fh_nonblocking $fh,
-							0;
+						AnyEvent::Util::fh_nonblocking $fh, 0;
 
 						open STDIN,  "<&", $fh;
 						open STDOUT, ">&", $fh;
 						open STDERR, ">&", $fh;
 						close $fh;
 
-						syswrite STDERR,
-							"starting sh in $::BASE, dbdir $bn::DBDIR\n";
+						syswrite STDERR, "starting sh in $::BASE, dbdir $bn::DBDIR\n";
 						chdir $::BASE;
 						exec "/bin/sh", "-i";
 
@@ -309,9 +266,7 @@ sub ccport
 					return;
 
 				} else {
-					return $reply->(
-						    $Types::Serialiser::false =>
-							    cmd => $c->[0]);
+					return $reply->($Types::Serialiser::false => cmd => $c->[0]);
 				}
 			}
 		}

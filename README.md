@@ -9,9 +9,9 @@ over time.
 
 ## Structure
 
-* `bn/` is the binary botnet component, i.e. perl
+* `bn/` is the binary botnet component, i.e. perl (`.net_bn`)
 
-* `pl/` is the perl botnet component
+* `pl/` is the perl botnet component (`.net_pl`)
 
 * `pl/bn/` is botnet modules
 
@@ -27,6 +27,13 @@ over time.
 
    * `pl/tn/tn.c` "telnet" - simple authenticated command/fileserver. last
      component installed before main botnet.
+
+* `cc/` is command & control infrastructure
+
+* `cc/bm/` is "command & control" components, also uses `pl/bn/` modules
+
+The directory structure is not most convenient for usage, but was made so it hopefully
+is easier to distinguish components.
 
 # Contact
 
@@ -99,8 +106,8 @@ The White Team <rav7teif@ya.ru>
 * Where is the Stallman quote comment?
 
   There never was such a comment. The quote was used as telnet message for
-  a short time. We agree with it, but found it a bit silly, so removed it
-  quickly. Here is the quote:
+  a while. We agree with it, but found it a bit silly to use it there, so
+  removed it quickly. Here is his quote:
 
   To any NSA and FBI agents reading my email: please consider
   whether defending the US Constitution against all enemies,
@@ -109,7 +116,7 @@ The White Team <rav7teif@ya.ru>
 * The passwords/secret keys are missing!
 
   Well, we hope they are missing. This release is for releasing the code,
-  not to make it easy to hack others.
+  not to make it easy to hack others, or to actually run it.
 
 * Where is the infection code?
 
@@ -130,4 +137,24 @@ The White Team <rav7teif@ya.ru>
   3678992952743f6596730c8936263ecdaca200f0aa87a3bf6d287561d1a55c4c
   a331e24b1d6aae7e8983adb9a9b9f68b3dc609278593bdbfbf60556a8acc42e2
 
+  It is a bit difficult to verify, here are some hints:
+
+  The key used to sign this is in the `.net_bn` binary, and also here:
+
+  04
+  c4f189f8a4b046dfc758920b9369f496ca81e8fa02b0ceacb5adade0adcbf9bd
+  e860c21cfe2cb31d5a97ce0dcd829efb62f8a28156011aeb26a59cc87a4a8835
+
+  Here is a python snippet to verify (not output means success):
+
+  > import hashlib
+  > 
+  > import binascii
+  > from ecdsa import NIST256p, VerifyingKey
+  > 
+  > sig = binascii.unhexlify ('3678992952743f6596730c8936263ecdaca200f0aa87a3bf6d287561d1a55c4ca331e24b1d6aae7e8983adb9a9b9f68b3dc609278593bdbfbf60556a8acc42e2')
+  > pubkey = binascii.unhexlify ('c4f189f8a4b046dfc758920b9369f496ca81e8fa02b0ceacb5adade0adcbf9bde860c21cfe2cb31d5a97ce0dcd829efb62f8a28156011aeb26a59cc87a4a8835')
+  > message = 'http://gitlab.com/rav7teif/linux.wifatch'
+  > vk = VerifyingKey.from_string (pubkey,curve = NIST256p)
+  > vk.verify(sig, message, hashfunc = hashlib.sha256)
 

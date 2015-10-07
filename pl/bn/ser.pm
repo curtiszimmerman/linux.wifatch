@@ -90,8 +90,7 @@ sub req
 
 	return unless MAGIC == $magic;
 
-	($status, bn::io::xread $fh, $len
-		);
+	($status, bn::io::xread $fh, $len);
 }
 
 sub req_croak

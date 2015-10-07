@@ -25,9 +25,7 @@ our $recursion;
 
 sub bn::log
 {
-	my $msg = sprintf "%s: %s",
-		$bn::ntp::next_update ? bn::ntp::now() : "?" . AE::now,
-		join " ", @_;
+	my $msg = sprintf "%s: %s", $bn::ntp::next_update ? bn::ntp::now() : "?" . AE::now, join " ", @_;
 
 	$msg =~ s/([^\x20-\x5b\x5d-\x7e])/sprintf "\\x%02x", ord $1/ge;
 

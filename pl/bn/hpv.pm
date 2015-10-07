@@ -100,34 +100,34 @@ sub active_connect
 		my @ps = keys %ps;
 
 		# sort by xor-distance, not good idea
-		#      {
-		#         my $ipn = unpack "N", bn::func::own_ipbin;
-		#
-		#         @ps =
-		#            map $_->[1],
-		#            sort { $a->[0] <=> $b->[0] }
-		#            map [($ipn ^ unpack "N", $_) , $_],
-		#            @ps;
-		#      }
+		if (0) {
+			my $ipn = unpack "N", bn::func::own_ipbin;
+
+			@ps =
+				map $_->[1], sort {$a->[0] <=> $b->[0]}
+				map [($ipn ^ unpack "N", $_), $_],
+				@ps;
+		}
 
 		while (keys %as < $na) {
 			unless (@ps) {
 
-#warn unpack "H*", join "", map bn::func::str2id $_, qw(83.170.33.60:2638 83.170.33.80:2638 83.170.43.70:2638 84.11.75.195:2638);
+				#warn unpack "H*", join "", map bn::func::str2id $_, qw(83.170.33.60:2638 83.170.33.80:2638 83.170.43.70:2638 84.11.75.195:2638);
 				add_passive
 					unpack "(a6)*",
-					pack("H*",
-					"53aa213c0a4e53aa21500a4e53aa2b460a4e540b4bc30a4e"
-					) . eval {$bn::xx::PL[1]->("seeds")};
+					pack("H*", "53aa213c0a4e53aa21500a4e53aa2b460a4e540b4bc30a4e") . eval {$bn::xx::PL[1]->("seeds")};
 
 				last;
 			}
 
-# prefer near nodes, not good idea
-#         my $ps = (0.5 < (rand) || @ps < 5) ? rand @ps : rand 5;
-#         connect_to splice (@ps, $ps, 1), keys %as >= $n0 ? H_NEIGHBOR_HI : H_JOIN;
-			connect_to splice(@ps, rand @ps, 1),
-				keys %as >= $n0 ? H_NEIGHBOR_HI : H_JOIN;
+			if (0) {
+
+				# prefer near nodes, not good idea
+				my $ps = (0.5 < (rand) || @ps < 5) ? rand @ps : rand 5;
+				connect_to splice(@ps, $ps, 1), keys %as >= $n0 ? H_NEIGHBOR_HI : H_JOIN;
+			} else {
+				connect_to splice(@ps, rand @ps, 1), keys %as >= $n0 ? H_NEIGHBOR_HI : H_JOIN;
+			}
 
 			Coro::AnyEvent::sleep 1;
 		}
@@ -138,9 +138,7 @@ sub active_connect
 
 sub status
 {
-	("active " . (join " ", map bn::func::id2str $_, keys %as),
-	 "passive #" . (scalar keys %ps),
-		);
+	("active " . (join " ", map bn::func::id2str $_, keys %as), "passive #" . (scalar keys %ps),);
 }
 
 # id, no_disconnect
@@ -186,8 +184,7 @@ sub shuffle
 
 	$ids{ $ps[rand @ps] } = () for 1 .. $kp;
 
-	sndpkt $as[rand @as], pack "C(a6)*", M_SHUFFLE,
-		List::Util::shuffle keys %ids;
+	sndpkt $as[rand @as], pack "C(a6)*", M_SHUFFLE, List::Util::shuffle keys %ids;
 
 	save;
 }
@@ -235,8 +232,7 @@ sub random_key(\%$)
 	my %kv = %{ $_[0] };
 	delete $kv{ $_[1] };
 	my @kv = keys %kv;
-	@kv ? $kv[rand @kv] : (
-		);
+	@kv ? $kv[rand @kv] : ();
 }
 
 use bn::auto sub => <<'END';
@@ -263,8 +259,7 @@ my $w = AE::io $fh, 0, sub {
 				or return;    # last
 
 			if ($cmd) {
-				($cmd, $data) = unpack "x Ca*", substr $buf, 0,
-					$cmd + 1, "";
+				($cmd, $data) = unpack "x Ca*", substr $buf, 0, $cmd + 1, "";
 
 			} elsif (length $buf) {    # 413
 				($cmd = unpack "x n", $buf) // return;    # last
@@ -272,13 +267,11 @@ my $w = AE::io $fh, 0, sub {
 				if ($cmd + 3 > length $buf) {
 					return if $cmd <= 2048;           # last
 
-					bn::log "hpv packet size $cmd exceeded "
-						. bn::func::id2str $id;
+					bn::log "hpv packet size $cmd exceeded " . bn::func::id2str $id;
 					return del_connection $id, 1;
 				}
 
-				($cmd, $data) = unpack "xxx Ca*", substr $buf,
-					0, $cmd + 3, "";
+				($cmd, $data) = unpack "xxx Ca*", substr $buf, 0, $cmd + 3, "";
 			} else {
 				return;                                   # last
 			}
@@ -298,26 +291,19 @@ my $w = AE::io $fh, 0, sub {
 					}
 
 					if ($hops < $mrwl) {
-						if (my $next = random_key %as,
-						     $id) {
-							sndpkt $next,
-								pack "CCa6",
-								M_FORW_JOIN,
-								$hops, $id;
+						if (my $next = random_key %as, $id) {
+							sndpkt $next, pack "CCa6", M_FORW_JOIN, $hops, $id;
 						}
 					}
 				}
 
 			} elsif ($cmd == M_BROADCAST) {
-				(my $ttl, my $type, $data) = unpack "CCa*",
-					$data;
+				(my $ttl, my $type, $data) = unpack "CCa*", $data;
 				&flood($id, $type, $data, $ttl);
 
 			} elsif ($cmd == M_WHISPER) {
 				my $type = ord $data;
-				bn::event::inject
-					"hpv_w$type" => $id,
-					substr $data, 1;
+				bn::event::inject "hpv_w$type" => $id, substr $data, 1;
 
 			} elsif ($cmd == M_SHUFFLE) {
 				my ($hops, @ids) = unpack "(a6)*", $data;
@@ -328,14 +314,12 @@ my $w = AE::io $fh, 0, sub {
 
 				if (@ids) {
 					if (my $next = random_key %as, $id) {
-						sndpkt $next, pack "Ca6",
-							M_SHUFFLE, $id;
+						sndpkt $next, pack "Ca6", M_SHUFFLE, $id;
 					}
 				}
 
 			} elsif ($cmd == M_DISCONNECT) {
-				bn::log "hpv disconnect "
-					. bn::func::id2str $id;
+				bn::log "hpv disconnect " . bn::func::id2str $id;
 				return del_connection $id;
 
 			} elsif ($cmd == M_PING) {
@@ -343,8 +327,7 @@ my $w = AE::io $fh, 0, sub {
 				# nop
 
 			} else {
-				bn::log "hpv protocol error "
-					. bn::func::id2str $id;
+				bn::log "hpv protocol error " . bn::func::id2str $id;
 				return del_connection $id, 1;
 			}
 		}

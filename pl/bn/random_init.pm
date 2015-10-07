@@ -26,8 +26,7 @@ sub run
 	open my $out, "+</dev/random"
 		or return;
 
-	syswrite $out, pack "N", Math::TrulyRandom::truly_random_value
-		for 1 .. 32;
+	syswrite $out, pack "N", Math::TrulyRandom::truly_random_value for 1 .. 32;
 }
 
 1

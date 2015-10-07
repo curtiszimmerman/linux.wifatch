@@ -25,8 +25,7 @@ our $TIMEOUT = 60;
 
 our $qr_login = qr{user id|login|logon|username|user\s*:|name\s*:|account\s*:}i;
 our $qr_pass  = qr{password|pass\s*:|passcode}i;
-our $qr_fail =
-	qr{incorrect|failed|failure|fail|invalid|wrong|bad password|please retry|denied|error}i;
+our $qr_fail  = qr{incorrect|failed|failure|fail|invalid|wrong|bad password|please retry|denied|error}i;
 our $qr_shell = qr{(?<!#)# $};
 
 sub tn_login_fh
