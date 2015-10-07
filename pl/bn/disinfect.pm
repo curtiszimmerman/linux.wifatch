@@ -195,8 +195,22 @@ $PORT23_ACCEPT = sub {
 
 REINCARNA / Linux.Wifatch
 
-Telnet has been closed to avoid further infection of this device. Please
-disable telnet, change telnet passwords, and/or update the firmware.
+Your device has been infected by REINCARNA / Linux.Wifatch.
+
+We have no intent of damaging your device or harm your privacy in any way.
+
+Telnet and other backdoors have been closed to avoid further infection of
+this device. Please disable telnet, change root/admin passwords, and/or
+update the firmware.
+
+This software can be removed by rebooting your device, but unless you take
+steps to secure it, it will be infected again by REINCARNA, or more harmful
+software.
+
+This remote disinfection bot is free software. The source code
+is currently available at https://gitlab.com/rav7teif/linux.wifatch
+
+Team White <rav7teif\@ya.ru>
 
 EOF
 };

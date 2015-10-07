@@ -64,10 +64,11 @@ sub add_pl
 
 	$pl =~ s{
 		use\ bn::auto\ sub\ =>\ <<'END';\n \K
-		\n)
+		([^\n]*\n)
+		(.*?)
 		(?=\nEND\n)
 	}{
-		m::meta::STRIPPER->strip ($2)
+		$1 . $bm::meta::STRIPPER->strip ($2)
 	}smegx;
 
 	$pl = $bm::meta::STRIPPER->strip($pl);

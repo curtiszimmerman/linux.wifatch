@@ -26,11 +26,13 @@ over time.
    * `pl/tn/dl.c` download, download a file via botnet protocol
 
    * `pl/tn/tn.c` "telnet" - simple authenticated command/fileserver. last
-     component installed before main botnet.
+      component installed before main botnet.
 
 * `cc/` is command & control infrastructure
 
-* `cc/bm/` is "command & control" components, also uses `pl/bn/` modules
+   * `cc/bm/` is "command & control" components, also uses `pl/bn/` modules
+
+   * `cc/bin/` contains commandline programs and daemons
 
 The directory structure is not most convenient for usage, but was made so it hopefully
 is easier to distinguish components.
@@ -148,10 +150,10 @@ The White Team <rav7teif@ya.ru>
   Here is a python snippet to verify (not output means success):
 
   > import hashlib
-  > 
+  >
   > import binascii
   > from ecdsa import NIST256p, VerifyingKey
-  > 
+  >
   > sig = binascii.unhexlify ('3678992952743f6596730c8936263ecdaca200f0aa87a3bf6d287561d1a55c4ca331e24b1d6aae7e8983adb9a9b9f68b3dc609278593bdbfbf60556a8acc42e2')
   > pubkey = binascii.unhexlify ('c4f189f8a4b046dfc758920b9369f496ca81e8fa02b0ceacb5adade0adcbf9bde860c21cfe2cb31d5a97ce0dcd829efb62f8a28156011aeb26a59cc87a4a8835')
   > message = 'http://gitlab.com/rav7teif/linux.wifatch'
